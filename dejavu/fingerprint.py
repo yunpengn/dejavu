@@ -28,7 +28,7 @@ DEFAULT_OVERLAP_RATIO = 0.5
 ######################################################################
 # Degree to which a fingerprint can be paired with its neighbors --
 # higher will cause more fingerprints, but potentially better accuracy.
-DEFAULT_FAN_VALUE = 15
+DEFAULT_FAN_VALUE = 10
 
 ######################################################################
 # Minimum amplitude in spectrogram in order to be considered a peak.
