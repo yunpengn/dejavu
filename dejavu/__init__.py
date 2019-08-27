@@ -116,6 +116,10 @@ class Dejavu(object):
         hashes = fingerprint.fingerprint(samples, Fs=Fs)
         return self.db.return_matches(hashes)
 
+    def find_matches_for_song(self, song_id, samples, Fs=fingerprint.DEFAULT_FS):
+        hashes = fingerprint.fingerprint(samples, Fs=Fs)
+        return self.db.return_matches_for_song(song_id, hashes)
+
     def align_matches(self, matches):
         """
             Finds hash matches that align in time with other matches and finds
@@ -162,9 +166,54 @@ class Dejavu(object):
             Database.FIELD_FILE_SHA1 : song.get(Database.FIELD_FILE_SHA1, None).encode("utf8"),}
         return song
 
+    def align_matches(self, song_id, matches):
+        """
+            Finds hash matches that align in time with other matches and finds
+            consensus about which hashes are "true" signal from the audio.
+
+            Returns a dictionary with match information.
+        """
+        # align by diffs
+        diff_counter = {}
+        largest = 0
+        largest_count = 0
+        for diff in matches:
+            if diff not in diff_counter:
+                diff_counter[diff] = 0
+            diff_counter[diff] += 1
+
+            if diff_counter[diff] > largest_count:
+                largest = diff
+                largest_count = diff_counter[diff][sid]
+
+        # extract idenfication
+        song = self.db.get_song_by_id(song_id)
+        if song:
+            # TODO: Clarify what `get_song_by_id` should return.
+            songname = song.get(Dejavu.SONG_NAME, None)
+        else:
+            return None
+
+        # return match info
+        nseconds = round(float(largest) / fingerprint.DEFAULT_FS *
+                         fingerprint.DEFAULT_WINDOW_SIZE *
+                         fingerprint.DEFAULT_OVERLAP_RATIO, 5)
+        song = {
+            Dejavu.SONG_ID : song_id,
+            Dejavu.SONG_NAME : songname.encode("utf8"),
+            Dejavu.CONFIDENCE : largest_count,
+            Dejavu.OFFSET : int(largest),
+            Dejavu.OFFSET_SECS : nseconds,
+            Database.FIELD_FILE_SHA1 : song.get(Database.FIELD_FILE_SHA1, None).encode("utf8"),}
+        return song
+
     def recognize(self, recognizer, *options, **kwoptions):
         r = recognizer(self)
         return r.recognize(*options, **kwoptions)
+
+    def recognize_for_song(self, recognizer, *options, **kwoptions):
+        r = recognizer(self)
+        return r.recognize_for_song(*options, **kwoptions)
 
 
 def _fingerprint_worker(filename, limit=None, song_name=None):

@@ -102,6 +102,11 @@ class SQLDatabase(Database):
     """ % (Database.FIELD_HASH, Database.FIELD_SONG_ID, Database.FIELD_OFFSET,
            FINGERPRINTS_TABLENAME, Database.FIELD_HASH)
 
+    SELECT_MULTIPLE_FOR_SONG = """
+        SELECT HEX(%s), %s FROM %s WHERE %s IN (%%s) AND %s = %%s;
+    """ % (Database.FIELD_HASH, Database.FIELD_OFFSET,
+           FINGERPRINTS_TABLENAME, Database.FIELD_HASH, Database.FIELD_SONG_ID)
+
     SELECT_ALL = """
         SELECT %s, %s FROM %s;
     """ % (Database.FIELD_SONG_ID, Database.FIELD_OFFSET, FINGERPRINTS_TABLENAME)
@@ -300,6 +305,31 @@ class SQLDatabase(Database):
                 for hash, sid, offset in cur:
                     # (sid, db_offset - song_sampled_offset)
                     yield (sid, offset - mapper[hash])
+
+    def return_matches_for_song(self, song_id, hashes):
+        """
+        Return the (song_id, offset_diff) tuples associated with
+        a list of (sha1, sample_offset) values.
+        """
+        # Create a dictionary of hash => offset pairs for later lookups
+        mapper = {}
+        for hash, offset in hashes:
+            mapper[hash.upper()] = offset
+
+        # Get an iteratable of all the hashes we need
+        values = list(mapper.keys())
+
+        with self.cursor(charset="utf8") as cur:
+            for split_values in grouper(values, 1000):
+                # Create our IN part of the query
+                query = self.SELECT_MULTIPLE_FOR_SONG
+                query = query % (', '.join(['UNHEX(%s)'] * len(split_values)), song_id)
+
+                cur.execute(query, split_values)
+
+                for hash, offset in cur:
+                    # db_offset - song_sampled_offset
+                    yield offset - mapper[hash]
 
     def __getstate__(self):
         return (self._options,)

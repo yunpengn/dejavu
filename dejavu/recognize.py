@@ -18,7 +18,16 @@ class BaseRecognizer(object):
             matches.extend(self.dejavu.find_matches(d, Fs=self.Fs))
         return self.dejavu.align_matches(matches)
 
+    def _recognize_for_song(self, song_id, *data):
+        matches = []
+        for d in data:
+            matches.extend(self.dejavu.find_matches_for_song(d, song_id, Fs=self.Fs))
+        return self.dejavu.align_matches_for_song(song_id, matches)
+
     def recognize(self):
+        pass  # base class does nothing
+
+    def recognize_for_song(self):
         pass  # base class does nothing
 
 
@@ -38,8 +47,23 @@ class FileRecognizer(BaseRecognizer):
 
         return match
 
+    def recognize_file_for_song(self, song_id, filename):
+        frames, self.Fs, file_hash = decoder.read(filename, self.dejavu.limit)
+
+        t = time.time()
+        match = self._recognize_for_song(song_id, *frames)
+        t = time.time() - t
+
+        if match:
+            match['match_time'] = t
+
+        return match
+
     def recognize(self, filename):
         return self.recognize_file(filename)
+
+    def recognize_for_song(self, song_id, filename):
+        return self.recognize_file_for_song(filename, song_id, filename)
 
 
 class MicrophoneRecognizer(BaseRecognizer):
