@@ -14,9 +14,12 @@ class BaseRecognizer(object):
 
     def _recognize(self, *data):
         matches = []
+        hashes_count = 0
         for d in data:
-            matches.extend(self.dejavu.find_matches(d, Fs=self.Fs))
-        return self.dejavu.align_matches(matches)
+            match, hashes = self.dejavu.find_matches(d, Fs=self.Fs)
+            matches.extend(match)
+            hashes_count += len(hashes)
+        return self.dejavu.align_matches(matches, hashes_count)
 
     def _recognize_for_song(self, song_id, *data):
         matches = []

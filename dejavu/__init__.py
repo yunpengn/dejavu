@@ -12,6 +12,7 @@ class Dejavu(object):
     SONG_ID = "song_id"
     SONG_NAME = 'song_name'
     CONFIDENCE = 'confidence'
+    FINGERPRINT_COUNT = 'fingerprint_count'
     MATCH_TIME = 'match_time'
     OFFSET = 'offset'
     OFFSET_SECS = 'offset_seconds'
@@ -114,13 +115,13 @@ class Dejavu(object):
 
     def find_matches(self, samples, Fs=fingerprint.DEFAULT_FS):
         hashes = fingerprint.fingerprint(samples, Fs=Fs)
-        return self.db.return_matches(hashes)
+        return self.db.return_matches(hashes), hashes
 
     def find_matches_for_song(self, song_id, samples, Fs=fingerprint.DEFAULT_FS):
         hashes = fingerprint.fingerprint(samples, Fs=Fs)
         return self.db.return_matches_for_song(song_id, hashes)
 
-    def align_matches(self, matches):
+    def align_matches(self, matches, hashes_count):
         """
             Finds hash matches that align in time with other matches and finds
             consensus about which hashes are "true" signal from the audio.
@@ -161,6 +162,7 @@ class Dejavu(object):
             Dejavu.SONG_ID : song_id,
             Dejavu.SONG_NAME : songname.encode("utf8"),
             Dejavu.CONFIDENCE : largest_count,
+            Dejavu.FINGERPRINT_COUNT: hashes_count,
             Dejavu.OFFSET : int(largest),
             Dejavu.OFFSET_SECS : nseconds,
             Database.FIELD_FILE_SHA1 : song.get(Database.FIELD_FILE_SHA1, None).encode("utf8"),}
