@@ -237,7 +237,7 @@ class SQLDatabase(Database):
             return cur.fetchone()
 
     def get_song_by_name(self, song_name):
-                """
+        """
         Returns song by its song name.
         """
         with self.cursor(cursor_type=DictCursor, charset="utf8") as cur:
