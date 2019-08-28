@@ -21,7 +21,7 @@ class BaseRecognizer(object):
     def _recognize_for_song(self, song_id, *data):
         matches = []
         for d in data:
-            matches.extend(self.dejavu.find_matches_for_song(d, song_id, Fs=self.Fs))
+            matches.extend(self.dejavu.find_matches_for_song(song_id, d, Fs=self.Fs))
         return self.dejavu.align_matches_for_song(song_id, matches)
 
     def recognize(self):
@@ -63,7 +63,7 @@ class FileRecognizer(BaseRecognizer):
         return self.recognize_file(filename)
 
     def recognize_for_song(self, song_id, filename):
-        return self.recognize_file_for_song(filename, song_id, filename)
+        return self.recognize_file_for_song(song_id, filename)
 
 
 class MicrophoneRecognizer(BaseRecognizer):

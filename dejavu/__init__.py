@@ -184,7 +184,7 @@ class Dejavu(object):
 
             if diff_counter[diff] > largest_count:
                 largest = diff
-                largest_count = diff_counter[diff][sid]
+                largest_count = diff_counter[diff]
 
         # extract idenfication
         song = self.db.get_song_by_id(song_id)
