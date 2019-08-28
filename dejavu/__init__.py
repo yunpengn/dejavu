@@ -166,7 +166,7 @@ class Dejavu(object):
             Database.FIELD_FILE_SHA1 : song.get(Database.FIELD_FILE_SHA1, None).encode("utf8"),}
         return song
 
-    def align_matches(self, song_id, matches):
+    def align_matches_for_song(self, song_id, matches):
         """
             Finds hash matches that align in time with other matches and finds
             consensus about which hashes are "true" signal from the audio.
