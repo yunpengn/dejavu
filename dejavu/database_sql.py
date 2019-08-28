@@ -114,6 +114,10 @@ class SQLDatabase(Database):
     SELECT_SONG = """
         SELECT %s, HEX(%s) as %s FROM %s WHERE %s = %%s;
     """ % (Database.FIELD_SONGNAME, Database.FIELD_FILE_SHA1, Database.FIELD_FILE_SHA1, SONGS_TABLENAME, Database.FIELD_SONG_ID)
+    
+    SELECT_SONG_BY_NAME = """
+        SELECT %s, HEX(%s) as %s FROM %s WHERE %s = %%s;
+    """ % (Database.FIELD_SONG_ID, Database.FIELD_FILE_SHA1, Database.FIELD_FILE_SHA1, SONGS_TABLENAME, Database.FIELD_SONGNAME)
 
     SELECT_NUM_FINGERPRINTS = """
         SELECT COUNT(*) as n FROM %s
@@ -230,6 +234,14 @@ class SQLDatabase(Database):
         """
         with self.cursor(cursor_type=DictCursor, charset="utf8") as cur:
             cur.execute(self.SELECT_SONG, (sid,))
+            return cur.fetchone()
+
+    def get_song_by_name(self, song_name):
+                """
+        Returns song by its song name.
+        """
+        with self.cursor(cursor_type=DictCursor, charset="utf8") as cur:
+            cur.execute(self.SELECT_SONG_BY_NAME, (song_name,))
             return cur.fetchone()
 
     def insert(self, hash, sid, offset):
