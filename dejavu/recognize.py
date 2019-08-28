@@ -16,9 +16,10 @@ class BaseRecognizer(object):
         matches = []
         hashes_count = 0
         for d in data:
-            match, hashes = self.dejavu.find_matches(d, Fs=self.Fs)
-            matches.extend(match)
-            hashes_count += len(hashes)
+            matches.extend(self.dejavu.find_matches(d, Fs=self.Fs))
+
+            hashes = fingerprint.fingerprint(d, Fs=self.Fs)
+            hashes_count += len(list(hashes))
         return self.dejavu.align_matches(matches, hashes_count)
 
     def _recognize_for_song(self, song_id, *data):

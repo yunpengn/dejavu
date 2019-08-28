@@ -115,7 +115,7 @@ class Dejavu(object):
 
     def find_matches(self, samples, Fs=fingerprint.DEFAULT_FS):
         hashes = fingerprint.fingerprint(samples, Fs=Fs)
-        return self.db.return_matches(hashes), hashes
+        return self.db.return_matches(hashes)
 
     def find_matches_for_song(self, song_id, samples, Fs=fingerprint.DEFAULT_FS):
         hashes = fingerprint.fingerprint(samples, Fs=Fs)
